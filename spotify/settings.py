@@ -11,12 +11,15 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import django_mongodb_backend
+from dotenv import load_dotenv
+import os
 
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+MONGO_URI = os.getenv('MONGO_URI')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -77,7 +80,7 @@ WSGI_APPLICATION = 'spotify.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": django_mongodb_backend.parse_uri("mongodb+srv://admin:fkDgwP2YQzzZjl4P@cluster0.6kyzd.mongodb.net/spotify?retryWrites=true&w=majority&appName=Cluster0"),
+    "default": django_mongodb_backend.parse_uri(MONGO_URI),
 }
 
 # Password validation
