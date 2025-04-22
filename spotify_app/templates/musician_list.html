@@ -1,0 +1,20 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musicians</title>
+</head>
+<body>
+  <h1>musicians</h1>
+  <ul>
+     {% for musician in musicians %}
+           <li>
+              <strong>{{ musician.musician_name }}</strong> 
+              {{musician.social_media}}
+           </li>
+     {% empty %}
+           <li>No musicians found.</li>
+     {% endfor %}
+  </ul>
+</body>
+</html>

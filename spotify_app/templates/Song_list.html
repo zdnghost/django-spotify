@@ -1,0 +1,19 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Songs</title>
+</head>
+<body>
+  <h1>songs</h1>
+  <ul>
+     {% for song in songs %}
+           <li>
+              <strong>{{ song.song_name }}</strong> 
+           </li>
+     {% empty %}
+           <li>No musicians found.</li>
+     {% endfor %}
+  </ul>
+</body>
+</html>
