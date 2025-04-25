@@ -1,8 +1,12 @@
 
 ## 1. Chạy Virtual Environment (venv)
-kích hoạt môi trường ảo:
+tạo môi trường ảo:
 
-### Windows:
+```bash
+python -m venv venv 
+```
+
+chạy môi trường ảo
 ```bash
 venv\Scripts\activate
 ```
@@ -10,20 +14,28 @@ venv\Scripts\activate
 ## 2.Tạo env
 copy file ```.env.example``` thành ```.env```
 
-## 3.Tạo venv
-python -m venv venv
+### Windows:
+```bash
+copy .env.example .env
+```
+### Linux / macOS / Git Bash / WSL:
+```bash
+cp .env.example .env
+```
+rồi config lại file env
 
-## 4.Truy cập venv
-.\venv\Scripts\Activate.ps1
 
-## 5.Install các package trong file Requirement.txt
+## 3.Install các package trong file Requirement.txt
+```bash
 pip install -r requirements.txt
-
-## 6.Run Server
+```
+## 4.Run Server
 
 ```bash
 python manage.py runserver
 ```
 
 ## Lưu ý nếu không có quyền admin thì chạy 
+```bash
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
