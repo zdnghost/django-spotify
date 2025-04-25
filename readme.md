@@ -9,18 +9,21 @@ venv\Scripts\activate
 
 ## 2.Tạo env
 copy file ```.env.example``` thành ```.env```
-### Windows:
-```bash
-copy .env.example .env
-```
-### Linux / macOS / Git Bash / WSL:
-```bash
-cp .env.example .env
-```
-rồi config lại file env
 
-## 2.Run Server 
+## 3.Tạo venv
+python -m venv venv
+
+## 4.Truy cập venv
+.\venv\Scripts\Activate.ps1
+
+## 5.Install các package trong file Requirement.txt
+pip install -r requirements.txt
+
+## 6.Run Server
 
 ```bash
 python manage.py runserver
 ```
+
+## Lưu ý nếu không có quyền admin thì chạy 
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
