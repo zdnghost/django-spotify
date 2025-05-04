@@ -11,7 +11,7 @@ chạy môi trường ảo
 venv\Scripts\activate
 ```
 
-## 2.Tạo env
+## 2.Tạo .env
 copy file ```.env.example``` thành ```.env```
 
 ### Windows:

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'spotify_app.apps.SpotifyAppConfig',
     'rest_framework',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -83,6 +84,13 @@ WSGI_APPLICATION = 'spotify.wsgi.application'
 DATABASES = {
     "default": django_mongodb_backend.parse_uri(MONGO_URI),
 }
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_ENDPOINT_URL = f"https://{os.getenv('AWS_ACCOUNT_ID')}.r2.cloudflarestorage.com"
+AWS_S3_REGION_NAME = "auto"
+AWS_QUERYSTRING_AUTH = False
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
