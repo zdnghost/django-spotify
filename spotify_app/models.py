@@ -34,7 +34,7 @@ class Album(models.Model):
 class Song(models.Model):
     song_name = models.CharField(max_length=255)
 
-    song_picture = models.FileField(upload_to='song_pictures/')
+    song_picture = models.ImageField(upload_to='song_pictures/')
     song_file = models.FileField(upload_to='song_files/')
 
     musicians = models.ManyToManyField(Musician, blank=True, null=True)
