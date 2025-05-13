@@ -2,7 +2,8 @@ from django.db import models
 from django.conf import settings
 from django_mongodb_backend.fields import EmbeddedModelField, ArrayField
 from django_mongodb_backend.models import EmbeddedModel
-
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 # Create your models here.
 class Musician(models.Model):
     musician_name = models.CharField(max_length=255)
@@ -70,7 +71,6 @@ class Account(models.Model):
     email = models.EmailField()
     gender = models.BooleanField()  # True: Nam, False: Nữ
     birthday = models.DateField()
-    region = models.CharField(max_length=100)
 
     class Meta:
         db_table = "account"
@@ -79,5 +79,30 @@ class Account(models.Model):
     def __str__(self):
         return self.user_name
 
+class AccountUser(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)
+    user_name = models.CharField(max_length=255, unique=True)
+    gender = models.BooleanField(null=True, blank=True)  # True: Nam, False: Nữ
+    birthday = models.DateField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)  
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_superuser = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(default=timezone.now)
+    
+    # Thêm các trường liên quan đến playlist yêu thích và nghệ sĩ yêu thích
+    favorite_playlists = models.ManyToManyField('Playlist', blank=True, related_name='favorited_by')
+    favorite_musicians = models.ManyToManyField('Musician', blank=True, related_name='fans')
+    favorite_songs = models.ManyToManyField('Song', blank=True, related_name='liked_by')
+        
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['user_name']
+    
+    class Meta:
+        db_table = "account"
+        managed = False
+
+    def __str__(self):
+        return self.user_name
 
 
