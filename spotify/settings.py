@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'djoser',
     'rest_framework_simplejwt',
     'storages',
-    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -152,7 +151,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'
-
+AUTH_USER_MODEL = 'spotify_app.AccountUser'
 MIGRATION_MODULES = {
     'admin': 'mongo_migrations.admin',
     'auth': 'mongo_migrations.auth',

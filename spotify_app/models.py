@@ -23,7 +23,7 @@ class Musician(models.Model):
 class Album(models.Model):
     album_name = models.CharField(max_length=255)
 
-    musicians = models.ManyToManyField(Musician, blank=True, null=True)
+    musicians = models.ManyToManyField(Musician, blank=True)
 
     class Meta:
         db_table = "album"
@@ -38,7 +38,7 @@ class Song(models.Model):
     song_picture = models.FileField(upload_to='song_pictures/')
     song_file = models.FileField(upload_to='song_files/')
 
-    musicians = models.ManyToManyField(Musician, blank=True, null=True)
+    musicians = models.ManyToManyField(Musician, blank=True)
 
     day_add = models.DateField()
     views = models.IntegerField(default=0)  
@@ -56,8 +56,8 @@ class Song(models.Model):
 class Playlist(models.Model):
     playlist_name = models.CharField(max_length=255)
 
-    musicians = models.ManyToManyField(Musician, blank=True, null=True)
-    songs = models.ManyToManyField(Song, blank=True, null=True)
+    musicians = models.ManyToManyField(Musician, blank=True)
+    songs = models.ManyToManyField(Song, blank=True)
 
     class Meta:
         db_table = "playlist"
@@ -97,7 +97,17 @@ class AccountUser(AbstractBaseUser, PermissionsMixin):
         
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['user_name']
-    
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='',  
+        blank=True,
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='',
+        blank=True,
+    )
+
     class Meta:
         db_table = "account"
         managed = False
