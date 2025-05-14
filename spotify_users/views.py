@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
 from .models import CustomUser
+from rest_framework.decorators import api_view, permission_classes
 
 class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -21,7 +22,8 @@ class UserRegistrationView(APIView):
             
             return Response({
                 'user': UserProfileSerializer(user).data,
-                'tokens': tokens
+                'tokens': tokens,
+                'message': 'Đăng ký tài khoản thành công!'
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -41,7 +43,8 @@ class UserLoginView(APIView):
             
             return Response({
                 'user': UserProfileSerializer(user).data,
-                'tokens': tokens
+                'tokens': tokens,
+                'message': 'Đăng nhập thành công!'
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -56,5 +59,21 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response({
+                'data': serializer.data,
+                'message': 'Cập nhật thông tin thành công!'
+            })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def user_logout(request):
+    try:
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({'message': 'Đăng xuất thành công!'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Refresh token là cần thiết'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

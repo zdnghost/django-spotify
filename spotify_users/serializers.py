@@ -1,15 +1,23 @@
 from rest_framework import serializers
 from .models import CustomUser
 from django.contrib.auth import authenticate
+from rest_framework.validators import UniqueValidator
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=CustomUser.objects.all(), message="Email này đã được sử dụng.")]
+    )
+    username = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(queryset=CustomUser.objects.all(), message="Username này đã được sử dụng.")]
+    )
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     password_confirm = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     
     class Meta:
         model = CustomUser
-        fields = ['email', 'username', 'full_name', 'password', 'password_confirm']
-
+        fields = ['email', 'username', 'full_name', 'birthday', 'password', 'password_confirm']
     
     def validate(self, data):
         if data['password'] != data['password_confirm']:
@@ -32,7 +40,9 @@ class UserLoginSerializer(serializers.Serializer):
         if email and password:
             user = authenticate(request=self.context.get('request'), username=email, password=password)
             if not user:
-                raise serializers.ValidationError('Không thể đăng nhập với thông tin đã cung cấp.')
+                raise serializers.ValidationError('Email hoặc mật khẩu không chính xác.')
+            if not user.is_active:
+                raise serializers.ValidationError('Tài khoản này đã bị vô hiệu hóa.')
         else:
             raise serializers.ValidationError('Email và mật khẩu là bắt buộc.')
         
@@ -42,5 +52,5 @@ class UserLoginSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'username', 'full_name', 'bio', 'profile_image', 'favorite_genres', 'date_joined']
+        fields = ['id', 'email', 'username', 'full_name', 'bio', 'birthday', 'profile_image', 'favorite_genres', 'date_joined']
         read_only_fields = ['id', 'email', 'date_joined']
