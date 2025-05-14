@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Musician, Album, Song, Playlist, Account
 
-
 class MusicianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Musician
