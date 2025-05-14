@@ -17,7 +17,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['email', 'username', 'full_name', 'birthday', 'password', 'password_confirm']
+        fields = ['email', 'username', 'password', 'password_confirm', 'birthday', 'gender']
     
     def validate(self, data):
         if data['password'] != data['password_confirm']:
@@ -50,7 +50,12 @@ class UserLoginSerializer(serializers.Serializer):
         return data
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'username', 'full_name', 'bio', 'birthday', 'profile_image', 'favorite_genres', 'date_joined']
+        fields = ['id', 'email', 'username', 'date_joined']
         read_only_fields = ['id', 'email', 'date_joined']
+    
+    def get_id(self, obj):
+        return str(obj.id)

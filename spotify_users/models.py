@@ -25,7 +25,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     id = ObjectIdAutoField(primary_key=True)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
-    birthday = models.DateField
+    birthday = models.DateField()
+    gender = models.BooleanField()  # True: Nam, False: Nữ
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
