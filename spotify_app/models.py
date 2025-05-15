@@ -17,6 +17,8 @@ class Musician(models.Model):
         managed = False
 
     def __str__(self):
+        if self.musician_name is None:
+            return "Musician name is None"
         return self.musician_name
 
 class Album(models.Model):
@@ -50,6 +52,8 @@ class Song(models.Model):
         managed = False
 
     def __str__(self):
+        if self.title is None:
+            return "Song title is None"
         return self.title
 
 class Playlist(models.Model):

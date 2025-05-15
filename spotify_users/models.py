@@ -45,6 +45,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         managed = False
     
     def __str__(self):
+        if self.email is None:
+            return "User email is None"
         return self.email
 
 class UserFollow(models.Model):
