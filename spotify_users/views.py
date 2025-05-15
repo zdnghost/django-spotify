@@ -2,9 +2,11 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
-from .models import CustomUser
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, UserFollowSerializer
+from .models import CustomUser, UserFollow
 from rest_framework.decorators import api_view, permission_classes
+from spotify_app.models import Musician
+from spotify_app.serializers import MusicianSerializer
 
 class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -65,6 +67,20 @@ class UserProfileView(APIView):
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserFollowedMusiciansView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+
+        user = request.user
+        follows = UserFollow.objects.filter(user=user).select_related('musician')
+        
+
+        musician_ids = [follow.musician.id for follow in follows]
+        musicians = Musician.objects.filter(id__in=musician_ids)
+        
+        serializer = MusicianSerializer(musicians, many=True, context={'request': request})
+        return Response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

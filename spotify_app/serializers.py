@@ -1,11 +1,17 @@
 from rest_framework import serializers
 from .models import Musician, Album, Song, Playlist, Account
 from django.db.models import Q
+from spotify_users.models import UserFollow
 
 class MusicianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Musician
-        fields =  ('musician_name','introduce','social_media')
+        fields =  ('musician_name','introduce','social_media', 'number_of_follower', 'is_followed')
+    def get_is_followed(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return UserFollow.objects.filter(user=request.user, musician=obj).exists()
+        return False
 
 class AlbumSerializer(serializers.ModelSerializer):
     musicians = MusicianSerializer(many=True, read_only=True)

@@ -8,7 +8,7 @@ class Musician(models.Model):
     musician_name = models.CharField(max_length=255)
     number_of_follower = models.IntegerField(default=0)
     introduce = models.TextField(blank=True)
-
+    is_followed = models.BooleanField(default=False)
     # Dạng dictionary chứa các link mạng xã hội
     social_media = models.JSONField(default=dict, blank=True)
 

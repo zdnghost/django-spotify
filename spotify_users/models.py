@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django_mongodb_backend.fields import ObjectIdAutoField
+from spotify_app.models import Musician
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
@@ -44,3 +45,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     
     def __str__(self):
         return self.email
+
+class UserFollow(models.Model):
+    id = ObjectIdAutoField(primary_key=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='following')
+    musician = models.ForeignKey(Musician, on_delete=models.CASCADE, related_name='followers')
+    followed_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'user_follows'
+        managed = False
+        unique_together = ('user', 'musician')  # Ensure a user can only follow a musician once
+    
+    def __str__(self):
+        return f"{self.user.username} follows {self.musician.musician_name}"

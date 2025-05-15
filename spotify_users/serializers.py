@@ -1,8 +1,10 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import CustomUser, UserFollow
 from django.contrib.auth import authenticate
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from spotify_app.models import Musician
+from spotify_app.serializers import MusicianSerializer
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
@@ -64,11 +66,31 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
+    followed_musicians_count = serializers.SerializerMethodField()
     
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'username', 'date_joined', 'birthday', 'gender', 'profile_image']
-        read_only_fields = ['id', 'email', 'date_joined']
+        fields = ['id', 'email', 'username', 'date_joined', 'birthday', 
+                  'gender', 'profile_image', 'followed_musicians_count']
+        read_only_fields = ['id', 'email', 'date_joined', 'followed_musicians_count']
     
     def get_id(self, obj):
         return str(obj.id)
+    
+    def get_followed_musicians_count(self, obj):
+        return UserFollow.objects.filter(user=obj).count()
+
+class UserFollowSerializer(serializers.ModelSerializer):
+    musician_details = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = UserFollow
+        fields = ['id', 'musician', 'followed_at', 'musician_details']
+        read_only_fields = ['id', 'followed_at']
+    
+    def get_musician_details(self, obj):
+        return {
+            'id': str(obj.musician.id),
+            'name': obj.musician.musician_name,
+            'followers': obj.musician.number_of_follower
+        }

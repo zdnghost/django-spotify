@@ -1,7 +1,11 @@
 from django.http import HttpResponse ,Http404 ,StreamingHttpResponse
 from django.shortcuts import render
-from rest_framework import viewsets
-from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer
+from rest_framework import viewsets, status, generics
+from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer, SearchResultSerializer
 from .models import Musician, Album, Song, Playlist, Account
 import boto3
 from botocore.client import Config
@@ -11,6 +15,7 @@ from .models import Song,Musician
 from pathlib import Path
 from bson import ObjectId
 from django.db.models import F
+from spotify_users.models import UserFollow
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
@@ -26,6 +31,63 @@ def index(request):
 class MusicianViewSet(viewsets.ModelViewSet):
     queryset = Musician.objects.all()
     serializer_class = MusicianSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+    
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def follow(self, request, pk=None):
+        musician = self.get_object()
+        user = request.user
+        
+        # Check if already following
+        follow_exists = UserFollow.objects.filter(user=user, musician=musician).exists()
+        
+        if follow_exists:
+            return Response({"detail": "You are already following this musician."}, 
+                           status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create the follow relationship
+        UserFollow.objects.create(user=user, musician=musician)
+        
+        # Increment the follower count
+        Musician.objects.filter(id=musician.id).update(number_of_follower=F('number_of_follower') + 1)
+        
+        return Response({"detail": f"You are now following {musician.musician_name}."}, 
+                       status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def unfollow(self, request, pk=None):
+        musician = self.get_object()
+        user = request.user
+        
+
+        try:
+            follow = UserFollow.objects.get(user=user, musician=musician)
+        except UserFollow.DoesNotExist:
+            return Response({"detail": "You are not following this musician."}, 
+                           status=status.HTTP_400_BAD_REQUEST)
+        
+
+        follow.delete()
+        
+
+        Musician.objects.filter(id=musician.id).update(number_of_follower=F('number_of_follower') - 1)
+        
+        return Response({"detail": f"You have unfollowed {musician.musician_name}."}, 
+                       status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def following(self, request):
+        
+        user = request.user
+        followed_musician_ids = UserFollow.objects.filter(user=user).values_list('musician_id', flat=True)
+        followed_musicians = Musician.objects.filter(id__in=followed_musician_ids)
+        
+        serializer = self.get_serializer(followed_musicians, many=True)
+        return Response(serializer.data)
 
 class AlbumViewSet(viewsets.ModelViewSet):
     queryset = Album.objects.all()
@@ -90,7 +152,7 @@ def stream_video(request, song_id):
 
     # Tăng lượt nghe
     Song.objects.filter(id=song_obj_id).update(views=F('views') + 1)
-    print(f"Incrementing views for song {song_id} by {increment}")
+
     # Stream file từ S3
     bucket_name = AWS_STORAGE_BUCKET_NAME
     object_key = song.video_file.name  # ví dụ: "song_files/audio.mp3"
@@ -110,3 +172,19 @@ def stream_video(request, song_id):
     )
     response['Content-Disposition'] = f'inline; filename="{song.song_name}.mp4"'
     return response
+
+class SearchView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = SearchResultSerializer
+    
+    def get(self, request, *args, **kwargs):
+        query = request.query_params.get('q', '')
+        
+        if not query:
+            return Response(
+                {"message": "Vui lòng cung cấp từ khóa tìm kiếm."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = self.get_serializer({'query': query})
+        return Response(serializer.data)

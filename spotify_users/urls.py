@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
-from .views import UserRegistrationView, UserLoginView, UserProfileView, user_logout
+from .views import UserRegistrationView, UserLoginView, UserProfileView, user_logout, UserFollowedMusiciansView
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -16,6 +16,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('profile/', UserProfileView.as_view(), name='profile'),
+    path('followed-musicians/', UserFollowedMusiciansView.as_view(), name='followed_musicians'),
 ]
 
 # Tạo file spotify_users/apps.py
