@@ -55,7 +55,7 @@ class UserFollow(models.Model):
     class Meta:
         db_table = 'user_follows'
         managed = False
-        unique_together = ('user', 'musician')  # Ensure a user can only follow a musician once
+        unique_together = ('user', 'musician')
     
     def __str__(self):
         return f"{self.user.username} follows {self.musician.musician_name}"

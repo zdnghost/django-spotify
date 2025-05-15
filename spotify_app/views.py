@@ -1,12 +1,11 @@
 from django.http import HttpResponse ,Http404 ,StreamingHttpResponse
 from django.shortcuts import render
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer, SearchResultSerializer
-from .models import Musician, Album, Song, Playlist, Account
+from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer, SearchResultSerializer, PlaylistCreateUpdateSerializer, PlaylistSongActionSerializer, UserFavoriteSerializer, UserFavoriteCreateSerializer
+from .models import Musician, Album, Song, Playlist, Account, UserFavorite
 import boto3
 from botocore.client import Config
 import os
@@ -14,7 +13,7 @@ from dotenv import load_dotenv
 from .models import Song,Musician
 from pathlib import Path
 from bson import ObjectId
-from django.db.models import F
+from django.db.models import F, Q
 from spotify_users.models import UserFollow
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,17 +41,17 @@ class MusicianViewSet(viewsets.ModelViewSet):
         musician = self.get_object()
         user = request.user
         
-        # Check if already following
+        # kiểm tra có follow chưa
         follow_exists = UserFollow.objects.filter(user=user, musician=musician).exists()
         
         if follow_exists:
             return Response({"detail": "You are already following this musician."}, 
                            status=status.HTTP_400_BAD_REQUEST)
         
-        # Create the follow relationship
+        # tạo bảng user nối musician
         UserFollow.objects.create(user=user, musician=musician)
         
-        # Increment the follower count
+        # tăng follow musician
         Musician.objects.filter(id=musician.id).update(number_of_follower=F('number_of_follower') + 1)
         
         return Response({"detail": f"You are now following {musician.musician_name}."}, 
@@ -98,8 +97,132 @@ class SongViewSet(viewsets.ModelViewSet):
     serializer_class = SongSerializer
 
 class PlaylistViewSet(viewsets.ModelViewSet):
-    queryset = Playlist.objects.all()
+    queryset = Playlist.objects.filter(is_public=True)
     serializer_class = PlaylistSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+class UserPlaylistViewSet(viewsets.ModelViewSet):
+    serializer_class = PlaylistSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        # Trả về playlist của user và public
+        return Playlist.objects.filter(
+            Q(user=user) | Q(is_public=True)
+        ).distinct()
+    
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return PlaylistCreateUpdateSerializer
+        return PlaylistSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy', 'add_song', 'remove_song']:
+            return [permissions.IsAuthenticated(), IsPlaylistOwner()]
+        return super().get_permissions()
+    
+    @action(detail=True, methods=['post'])
+    def add_song(self, request, pk=None):
+        playlist = self.get_object()
+        serializer = PlaylistSongActionSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            song_id = serializer.validated_data['song_id']
+            try:
+                song = Song.objects.get(id=ObjectId(song_id))
+                playlist.songs.add(song)
+                return Response({"detail": f"Song '{song.song_name}' added to playlist."}, 
+                              status=status.HTTP_200_OK)
+            except Song.DoesNotExist:
+                return Response({"detail": "Song not found."}, 
+                              status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'])
+    def remove_song(self, request, pk=None):
+        playlist = self.get_object()
+        serializer = PlaylistSongActionSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            song_id = serializer.validated_data['song_id']
+            try:
+                song = Song.objects.get(id=ObjectId(song_id))
+                if song in playlist.songs.all():
+                    playlist.songs.remove(song)
+                    return Response({"detail": f"Song '{song.song_name}' removed from playlist."}, 
+                                  status=status.HTTP_200_OK)
+                else:
+                    return Response({"detail": "Song not in playlist."}, 
+                                  status=status.HTTP_400_BAD_REQUEST)
+            except Song.DoesNotExist:
+                return Response({"detail": "Song not found."}, 
+                              status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserFavoriteViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserFavoriteCreateSerializer
+        return UserFavoriteSerializer
+    
+    def get_queryset(self):
+        return UserFavorite.objects.filter(user=self.request.user)
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    # này là xóa trực tiếp trong list
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        song_name = instance.song.song_name
+        self.perform_destroy(instance)
+        return Response({"detail": f"Song '{song_name}' removed from favorites."}, 
+                      status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['post'])
+    def toggle(self, request):
+        serializer = UserFavoriteCreateSerializer(data=request.data, context={'request': request})
+        
+        if serializer.is_valid():
+            song = serializer.validated_data['song']
+            user = request.user
+            
+            try:
+                # tìm các favorite đã có
+                favorite = UserFavorite.objects.get(user=user, song=song)
+                # này là xóa không trong giao diện list
+                favorite.delete()
+                return Response({"detail": f"Song '{song.song_name}' removed from favorites.",
+                                "is_favorite": False}, 
+                              status=status.HTTP_200_OK)
+            except UserFavorite.DoesNotExist:
+                # nếu không có thì favorited
+                UserFavorite.objects.create(user=user, song=song)
+                return Response({"detail": f"Song '{song.song_name}' added to favorites.",
+                                "is_favorite": True}, 
+                              status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
@@ -136,7 +259,7 @@ def stream_song(request, song_id):
         streaming_content=s3_object['Body'].iter_chunks(),
         content_type='audio/mpeg'
     )
-    response['Content-Disposition'] = f'inline; filename="{song.song_name}.mp3"'
+    response['Content-Disposition'] = f'inline; filename="{song.title}.mp3"'
     return response
 
 def stream_video(request, song_id):
@@ -170,7 +293,7 @@ def stream_video(request, song_id):
         streaming_content=s3_object['Body'].iter_chunks(),
         content_type='video/mp4'
     )
-    response['Content-Disposition'] = f'inline; filename="{song.song_name}.mp4"'
+    response['Content-Disposition'] = f'inline; filename="{song.title}.mp4"'
     return response
 
 class SearchView(generics.GenericAPIView):
@@ -188,3 +311,8 @@ class SearchView(generics.GenericAPIView):
         
         serializer = self.get_serializer({'query': query})
         return Response(serializer.data)
+
+class IsPlaylistOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # chỉ người sở hữu mới có quyền
+        return obj.user == request.user

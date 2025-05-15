@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
             name='Song',
             fields=[
                 ('id', django_mongodb_backend.fields.ObjectIdAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('song_name', models.CharField(max_length=255)),
+                ('title', models.CharField(max_length=255)),
                 ('song_picture', models.FileField(upload_to='song_pictures/')),
                 ('song_file', models.FileField(upload_to='song_files/')),
                 ('musicians', django_mongodb_backend.fields.ArrayField(base_field=django_mongodb_backend.fields.EmbeddedModelField(embedded_model=spotify_app.models.Musician), blank=True, null=True, size=None)),

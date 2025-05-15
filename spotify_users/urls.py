@@ -4,7 +4,7 @@ from .views import UserRegistrationView, UserLoginView, UserProfileView, user_lo
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-# Create a custom token view with our serializer
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
@@ -19,8 +19,7 @@ urlpatterns = [
     path('followed-musicians/', UserFollowedMusiciansView.as_view(), name='followed_musicians'),
 ]
 
-# Tạo file spotify_users/apps.py
-# ---------------------------
+
 from django.apps import AppConfig
 
 class SpotifyUsersConfig(AppConfig):
