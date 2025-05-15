@@ -145,7 +145,7 @@ class UserPlaylistViewSet(viewsets.ModelViewSet):
             try:
                 song = Song.objects.get(id=ObjectId(song_id))
                 playlist.songs.add(song)
-                return Response({"detail": f"Song '{song.song_name}' added to playlist."}, 
+                return Response({"detail": f"Song '{song.title}' added to playlist."}, 
                               status=status.HTTP_200_OK)
             except Song.DoesNotExist:
                 return Response({"detail": "Song not found."}, 
@@ -163,7 +163,7 @@ class UserPlaylistViewSet(viewsets.ModelViewSet):
                 song = Song.objects.get(id=ObjectId(song_id))
                 if song in playlist.songs.all():
                     playlist.songs.remove(song)
-                    return Response({"detail": f"Song '{song.song_name}' removed from playlist."}, 
+                    return Response({"detail": f"Song '{song.title}' removed from playlist."}, 
                                   status=status.HTTP_200_OK)
                 else:
                     return Response({"detail": "Song not in playlist."}, 
@@ -194,9 +194,9 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
     # này là xóa trực tiếp trong list
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        song_name = instance.song.song_name
+        title = instance.song.title
         self.perform_destroy(instance)
-        return Response({"detail": f"Song '{song_name}' removed from favorites."}, 
+        return Response({"detail": f"Song '{title}' removed from favorites."}, 
                       status=status.HTTP_200_OK)
     
     @action(detail=False, methods=['post'])
@@ -212,13 +212,13 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
                 favorite = UserFavorite.objects.get(user=user, song=song)
                 # này là xóa không trong giao diện list
                 favorite.delete()
-                return Response({"detail": f"Song '{song.song_name}' removed from favorites.",
+                return Response({"detail": f"Song '{song.title}' removed from favorites.",
                                 "is_favorite": False}, 
                               status=status.HTTP_200_OK)
             except UserFavorite.DoesNotExist:
                 # nếu không có thì favorited
                 UserFavorite.objects.create(user=user, song=song)
-                return Response({"detail": f"Song '{song.song_name}' added to favorites.",
+                return Response({"detail": f"Song '{song.title}' added to favorites.",
                                 "is_favorite": True}, 
                               status=status.HTTP_201_CREATED)
         
