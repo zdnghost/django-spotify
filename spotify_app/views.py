@@ -119,7 +119,7 @@ class UserPlaylistViewSet(viewsets.ModelViewSet):
     
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
-            return PlaylistCreateUpdateSerializer
+            return PlaylistCreateSerializer
         return PlaylistSerializer
     
     def get_serializer_context(self):
