@@ -85,7 +85,7 @@ class UserFavorite(models.Model):
         unique_together = ('user', 'song')  
 
     def __str__(self):
-        return f"{self.user.username}'s favorite: {self.song.song_name}"
+        return f"{self.user.username}'s favorite: {self.song.title}"
 
 class Account(models.Model):
     username = models.CharField(max_length=255)
