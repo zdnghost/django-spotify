@@ -54,7 +54,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
             return request.user.id == obj.user.id
         return False
 
-class PlaylistCreateUpdateSerializer(serializers.ModelSerializer):
+class PlaylistCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Playlist
         fields = ('playlist_name', 'description', 'is_public', 'cover_image')

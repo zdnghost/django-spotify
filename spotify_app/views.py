@@ -4,7 +4,7 @@ from rest_framework import viewsets, status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer, SearchResultSerializer, PlaylistCreateUpdateSerializer, PlaylistSongActionSerializer, UserFavoriteSerializer, UserFavoriteCreateSerializer
+from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer, SearchResultSerializer, PlaylistCreateSerializer, PlaylistSongActionSerializer, UserFavoriteSerializer, UserFavoriteCreateSerializer
 from .models import Musician, Album, Song, Playlist, Account, UserFavorite
 import boto3
 from botocore.client import Config
