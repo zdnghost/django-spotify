@@ -3,7 +3,6 @@ from .models import CustomUser
 from django.contrib.auth import authenticate
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
@@ -50,22 +49,6 @@ class UserLoginSerializer(serializers.Serializer):
         
         data['user'] = user
         return data
-
-class LogoutSerializer(serializers.Serializer):
-    refresh = serializers.CharField(required=True)
-    
-    def validate(self, data):
-        self.token = data.get('refresh')
-        if not self.token:
-            raise serializers.ValidationError('Refresh token là cần thiết')
-        return data
-    
-    def save(self, **kwargs):
-        try:
-            token = RefreshToken(self.token)
-            token.blacklist()
-        except Exception as e:
-            raise serializers.ValidationError(str(e))
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod

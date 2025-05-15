@@ -22,7 +22,7 @@ class Musician(models.Model):
 class Album(models.Model):
     album_name = models.CharField(max_length=255)
 
-    musicians = models.ManyToManyField(Musician, blank=True, null=True)
+    musicians = models.ManyToManyField(Musician, blank=True)
 
     class Meta:
         db_table = "album"
@@ -37,7 +37,7 @@ class Song(models.Model):
     song_picture = models.ImageField(upload_to='song_pictures/')
     song_file = models.FileField(upload_to='song_files/')
 
-    musicians = models.ManyToManyField(Musician, blank=True, null=True)
+    musicians = models.ManyToManyField(Musician, blank=True)
 
     day_add = models.DateField()
     views = models.IntegerField(default=0)  
@@ -55,8 +55,8 @@ class Song(models.Model):
 class Playlist(models.Model):
     playlist_name = models.CharField(max_length=255)
 
-    musicians = models.ManyToManyField(Musician, blank=True, null=True)
-    songs = models.ManyToManyField(Song, blank=True, null=True)
+    musicians = models.ManyToManyField(Musician, blank=True)
+    songs = models.ManyToManyField(Song, blank=True)
 
     class Meta:
         db_table = "playlist"
@@ -68,13 +68,13 @@ class Playlist(models.Model):
 class Account(models.Model):
     username = models.CharField(max_length=255)
     email = models.EmailField()
-    gender = models.BooleanField()  # True: Nam, False: Nữ
+    gender = models.BooleanField()  # True: Male, False: Female
     birthday = models.DateField()
     role = models.CharField(max_length=50, default="staff")  # e.g., admin, staff, manager
     date_joined = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "admin_account"  # Changed table name to differentiate
+        db_table = "admin_account"
         managed = False
 
     def __str__(self):

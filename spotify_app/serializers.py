@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Musician, Album, Song, Playlist, Account
+from django.db.models import Q
 
 class MusicianSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,7 +33,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['id', 'username', 'email', 'gender', 'birthday', 
+        fields = ['id', 'username', 'email', 
                   'role', 'date_joined']
         read_only_fields = ['id', 'date_joined']
 

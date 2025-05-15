@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Song,Musician,Album,Playlist,Account
+from .models import Song,Musician,Album,Playlist
 
 admin.site.register(Song)
 
@@ -14,8 +14,5 @@ class AlbumAdmin(admin.ModelAdmin):
         return ", ".join([musician.musician_name for musician in obj.musicians.all()])
     
     get_musicians.short_description = 'Musicians'
-@admin.register(Account)
-class AccountAdmin(admin.ModelAdmin):
-    list_display = ['username', 'email', 'role', 'date_joined']
-    list_filter = ['role']
-    search_fields = ['username', 'email']
+
+
