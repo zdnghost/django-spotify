@@ -36,7 +36,7 @@ class Song(models.Model):
     duration = models.IntegerField(default=0)
     albumArt = models.ImageField(upload_to='song_pictures/')
     song_file = models.FileField(upload_to='song_files/')
-    video_file = models.FileField(upload_to='video_files/')
+    video_file = models.FileField(upload_to='video_files/', blank=True)
     musicians = models.ManyToManyField(Musician, blank=True)
 
     day_add = models.DateField()
