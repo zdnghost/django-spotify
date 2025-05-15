@@ -112,6 +112,10 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
+    # Add these lines to allow custom claims in the token
+    'JTI_CLAIM': 'jti',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+    'UPDATE_LAST_LOGIN': False,
 }
 
 AUTH_USER_MODEL = 'spotify_users.CustomUser'

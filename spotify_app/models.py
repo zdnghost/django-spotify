@@ -66,18 +66,18 @@ class Playlist(models.Model):
         return self.playlist_name
 
 class Account(models.Model):
-    user_name = models.CharField(max_length=255)
+    username = models.CharField(max_length=255)
     email = models.EmailField()
     gender = models.BooleanField()  # True: Nam, False: Nữ
     birthday = models.DateField()
-    region = models.CharField(max_length=100)
+    role = models.CharField(max_length=50, default="staff")  # e.g., admin, staff, manager
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "account"
+        db_table = "admin_account"  # Changed table name to differentiate
         managed = False
 
     def __str__(self):
-        return self.user_name
-
+        return self.username
 
 

@@ -6,7 +6,7 @@ router.register(r'musicians', MusicianViewSet)
 router.register(r'albums', AlbumViewSet)
 router.register(r'songs', SongViewSet)
 router.register(r'playlists', PlaylistViewSet)
-router.register(r'accounts', AccountViewSet)
+router.register(r'admin-accounts', AccountViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),

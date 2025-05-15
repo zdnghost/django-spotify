@@ -14,4 +14,8 @@ class AlbumAdmin(admin.ModelAdmin):
         return ", ".join([musician.musician_name for musician in obj.musicians.all()])
     
     get_musicians.short_description = 'Musicians'
-admin.site.register(Account)
+@admin.register(Account)
+class AccountAdmin(admin.ModelAdmin):
+    list_display = ['username', 'email', 'role', 'date_joined']
+    list_filter = ['role']
+    search_fields = ['username', 'email']
