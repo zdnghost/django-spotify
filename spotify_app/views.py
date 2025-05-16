@@ -96,6 +96,11 @@ class SongViewSet(viewsets.ModelViewSet):
     queryset = Song.objects.all()
     serializer_class = SongSerializer
 
+class IsPlaylistOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # chỉ người sở hữu mới có quyền
+        return obj.user == request.user
+
 class PlaylistViewSet(viewsets.ModelViewSet):
     queryset = Playlist.objects.filter(is_public=True)
     serializer_class = PlaylistSerializer
@@ -312,8 +317,3 @@ class SearchView(generics.GenericAPIView):
         
         serializer = self.get_serializer({'query': query})
         return Response(serializer.data)
-
-class IsPlaylistOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        # chỉ người sở hữu mới có quyền
-        return obj.user == request.user
