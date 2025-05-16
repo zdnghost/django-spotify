@@ -112,7 +112,8 @@ class UserPlaylistViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Trả về playlist của user và public
+        if not user.is_authenticated:
+            return Playlist.objects.none()
         return Playlist.objects.filter(
             Q(user=user) | Q(is_public=True)
         ).distinct()
