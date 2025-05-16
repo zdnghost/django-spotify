@@ -120,65 +120,51 @@ class UserPlaylistViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return Playlist.objects.none()
+        
+        from django.db.models import Q
         return Playlist.objects.filter(
             Q(user=user) | Q(is_public=True)
         ).distinct()
     
-    def get_serializer_class(self):
-        if self.action in ['create', 'update', 'partial_update']:
-            return PlaylistCreateSerializer
-        return PlaylistSerializer
-    
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
-    
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
     
-    def get_permissions(self):
-        if self.action in ['update', 'partial_update', 'destroy', 'add_song', 'remove_song']:
-            return [permissions.IsAuthenticated(), IsPlaylistOwner()]
-        return super().get_permissions()
+    @action(detail=True, methods=['post'])
+    def add_track(self, request, pk=None):
+        playlist = self.get_object()
+        track_id = request.data.get('track_id')
+        
+        if not track_id:
+            return Response({'error': 'Track ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            track = Track.objects.get(id=track_id)
+            playlist.tracks.add(track)
+            return Response({
+                'message': 'Track added to playlist successfully!',
+                'playlist': PlaylistSerializer(playlist).data
+            })
+        except Track.DoesNotExist:
+            return Response({'error': 'Track not found'}, status=status.HTTP_404_NOT_FOUND)
     
     @action(detail=True, methods=['post'])
-    def add_song(self, request, pk=None):
+    def remove_track(self, request, pk=None):
         playlist = self.get_object()
-        serializer = PlaylistSongActionSerializer(data=request.data)
+        track_id = request.data.get('track_id')
         
-        if serializer.is_valid():
-            song_id = serializer.validated_data['song_id']
-            try:
-                song = Song.objects.get(id=ObjectId(song_id))
-                playlist.songs.add(song)
-                return Response({"detail": f"Song '{song.title}' added to playlist."}, 
-                              status=status.HTTP_200_OK)
-            except Song.DoesNotExist:
-                return Response({"detail": "Song not found."}, 
-                              status=status.HTTP_404_NOT_FOUND)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    @action(detail=True, methods=['post'])
-    def remove_song(self, request, pk=None):
-        playlist = self.get_object()
-        serializer = PlaylistSongActionSerializer(data=request.data)
+        if not track_id:
+            return Response({'error': 'Track ID is required'}, status=status.HTTP_400_BAD_REQUEST)
         
-        if serializer.is_valid():
-            song_id = serializer.validated_data['song_id']
-            try:
-                song = Song.objects.get(id=ObjectId(song_id))
-                if song in playlist.songs.all():
-                    playlist.songs.remove(song)
-                    return Response({"detail": f"Song '{song.title}' removed from playlist."}, 
-                                  status=status.HTTP_200_OK)
-                else:
-                    return Response({"detail": "Song not in playlist."}, 
-                                  status=status.HTTP_400_BAD_REQUEST)
-            except Song.DoesNotExist:
-                return Response({"detail": "Song not found."}, 
-                              status=status.HTTP_404_NOT_FOUND)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            track = Track.objects.get(id=track_id)
+            playlist.tracks.remove(track)
+            return Response({
+                'message': 'Track removed from playlist successfully!',
+                'playlist': PlaylistSerializer(playlist).data
+            })
+        except Track.DoesNotExist:
+            return Response({'error': 'Track not found'}, status=status.HTTP_404_NOT_FOUND)
     
 class UserFavoriteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

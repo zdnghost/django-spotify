@@ -4,6 +4,7 @@ from django.db.models import Q
 from spotify_users.models import UserFollow
 
 class MusicianSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     class Meta:
         model = Musician
         fields =  ('musician_name','introduce','social_media', 'number_of_follower', 'is_followed')
@@ -20,41 +21,54 @@ class AlbumSerializer(serializers.ModelSerializer):
         model = Album
         fields = ('album_name','musicians')
 
-class SongSerializer(serializers.ModelSerializer):  
-    musicians = MusicianSerializer(many=True, read_only=True)
-    album = AlbumSerializer(read_only=True)
-
+class SongSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    
     class Meta:
         model = Song
-        fields = ('title','albumArt','song_file','album','musicians')
+        fields = ['id', 'title', 'song_file', 'duration']
+    
+    def get_id(self, obj):
+        return str(obj.id)
+
+class MusicianListSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Musician
+        fields = ['id', 'musician_name']
+    
+    def get_id(self, obj):
+        return str(obj.id)
 
 class PlaylistSerializer(serializers.ModelSerializer):
-    musicians = MusicianSerializer(many=True, read_only=True)
+    id = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
     songs = SongSerializer(many=True, read_only=True)
-    user_username = serializers.SerializerMethodField()
+    musicians = MusicianListSerializer(many=True, read_only=True)
     song_count = serializers.SerializerMethodField()
-    is_owner = serializers.SerializerMethodField()
-
+    
     class Meta:
         model = Playlist
-        fields = ('id', 'playlist_name', 'description', 'created_at', 'updated_at', 
-                  'user', 'user_username', 'is_public', 'cover_image', 
-                  'musicians', 'songs', 'song_count', 'is_owner')
-        read_only_fields = ('id', 'created_at', 'updated_at', 'user', 'user_username')
+        fields = ['id', 'user_id', 'playlist_name', 'description', 'created_at', 'updated_at', 
+                  'is_public', 'cover_image', 'songs', 'musicians', 'song_count']
     
-    def get_user_username(self, obj):
-        return obj.user.username if obj.user else None
+    def get_id(self, obj):
+        return str(obj.id)  # Convert ObjectId to string
+    
+    def get_user_id(self, obj):
+        if obj.user:
+            return str(obj.user.id)  # Convert ObjectId to string
+        return None
     
     def get_song_count(self, obj):
-        return obj.songs.count()
-    
-    def get_is_owner(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated and obj.user:
-            return request.user.id == obj.user.id
-        return False
+        try:
+            return obj.songs.count()
+        except AttributeError:
+            return 0
 
 class PlaylistCreateSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     class Meta:
         model = Playlist
         fields = ('playlist_name', 'description', 'is_public', 'cover_image')
