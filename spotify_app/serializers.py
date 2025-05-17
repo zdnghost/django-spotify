@@ -15,11 +15,14 @@ class MusicianSerializer(serializers.ModelSerializer):
         return False
 
 class AlbumSerializer(serializers.ModelSerializer):
-    musicians = MusicianSerializer(many=True, read_only=True)
+    songs = serializers.SerializerMethodField()
 
     class Meta:
         model = Album
-        fields = ('album_name','musicians')
+        fields = ['id', 'album_name', 'coverurl', 'day_add', 'songs']
+
+    def get_songs(self, obj):
+        return SongSerializer(obj.song_set.all(), many=True).dat
 
 class SongSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()

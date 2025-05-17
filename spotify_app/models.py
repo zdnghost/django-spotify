@@ -7,10 +7,13 @@ from django_mongodb_backend.models import EmbeddedModel
 class Musician(models.Model):
     musician_name = models.CharField(max_length=255)
     number_of_follower = models.IntegerField(default=0)
-    introduce = models.TextField(blank=True)
+    about = models.TextField(blank=True)
     is_followed = models.BooleanField(default=False)
     # Dạng dictionary chứa các link mạng xã hội
     social_media = models.JSONField(default=dict, blank=True)
+    is_verified = models.BooleanField(default=True)
+    avatar_pic = models.ImageField(upload_to='musician_avatar/')
+    cover_pic = models.ImageField(upload_to='musician_cover/')
 
     class Meta:
         db_table = "musician"
@@ -25,7 +28,8 @@ class Album(models.Model):
     album_name = models.CharField(max_length=255)
     coverurl = models.ImageField(upload_to='album_pictures/')
     musicians = models.ManyToManyField(Musician, blank=True)
-    description = models.TextField(blank=True)
+    day_add = models.DateField()
+    
     class Meta:
         db_table = "album"
         managed = False

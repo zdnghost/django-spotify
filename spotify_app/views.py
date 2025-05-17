@@ -1,6 +1,7 @@
 from django.http import HttpResponse ,Http404 ,StreamingHttpResponse
 from django.shortcuts import render
 from rest_framework import viewsets, status, generics, permissions
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -95,6 +96,12 @@ class MusicianViewSet(viewsets.ModelViewSet):
 class AlbumViewSet(viewsets.ModelViewSet):
     queryset = Album.objects.all()
     serializer_class = AlbumSerializer
+
+class AlbumDetailView(APIView):
+    def get(self, request, pk):
+        album = Album.objects.get(pk=pk)
+        serializer = AlbumSerializer(album)
+        return Response(serializer.data)
 
 class SongViewSet(viewsets.ModelViewSet):
     queryset = Song.objects.all()
