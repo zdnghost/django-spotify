@@ -36,13 +36,7 @@ class MusicianViewSet(viewsets.ModelViewSet):
     queryset = Musician.objects.all()
     serializer_class = MusicianSerializer
     
-@api_view(['GET'])
-def test_auth(request):
-    return Response({
-        "Authorization": request.headers.get("Authorization"),
-        "User": str(request.user),
-        "Is Authenticated": request.user.is_authenticated
-    })
+    
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context.update({"request": self.request})
