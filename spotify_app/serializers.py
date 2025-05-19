@@ -11,7 +11,7 @@ class MusicianSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Musician
-        fields = ('id', 'musician_name','avatar_pic','cover_pic', 'about', 'social_media', 'number_of_follower', 'is_followed')
+        fields = ('id', 'musician_name','avatar_pic','cover_pic', 'about', 'social_media','is_verified', 'number_of_follower', 'is_followed')
     
     def get_id(self, obj):
         return str(obj.id)
