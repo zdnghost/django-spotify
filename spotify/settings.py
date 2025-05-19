@@ -124,6 +124,12 @@ CORS_ALLOWED_ORIGINS = [
     "https://muse-archive.vercel.app"
 ]
 
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+    ...
+]
+
 AUTH_USER_MODEL = 'spotify_users.CustomUser'
 
 # Password validation
