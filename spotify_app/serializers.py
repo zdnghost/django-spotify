@@ -6,6 +6,8 @@ from spotify_users.models import UserFollow
 class MusicianSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     is_followed = serializers.SerializerMethodField()
+    avatar_pic = serializers.ImageField()
+    cover_pic = serializers.ImageField()
     class Meta:
         model = Musician
         fields = ('id', 'musician_name','avatar_pic','cover_pic', 'about', 'social_media', 'number_of_follower', 'is_followed')
