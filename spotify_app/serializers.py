@@ -8,7 +8,7 @@ class MusicianSerializer(serializers.ModelSerializer):
     is_followed = serializers.SerializerMethodField()
     class Meta:
         model = Musician
-        fields = ('id', 'musician_name','avatar_pic', 'about', 'social_media', 'number_of_follower', 'is_followed')
+        fields = ('id', 'musician_name','avatar_pic','cover_pic', 'about', 'social_media', 'number_of_follower', 'is_followed')
     
     def get_id(self, obj):
         return str(obj.id)
@@ -48,7 +48,7 @@ class MusicianListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Musician
-        fields = ['id', 'musician_name']
+        fields = ['id', 'musician_name','avatar_pic']
     
     def get_id(self, obj):
         return str(obj.id)
