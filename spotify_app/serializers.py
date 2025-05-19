@@ -9,21 +9,15 @@ class MusicianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Musician
         fields = ('id', 'musician_name', 'about', 'social_media', 'number_of_follower', 'is_followed')
+    
+    def get_id(self, obj):
+        return str(obj.id)
+        
     def get_is_followed(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return UserFollow.objects.filter(user=request.user, musician=obj).exists()
         return False
-
-class AlbumSerializer(serializers.ModelSerializer):
-    songs = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Album
-        fields = ['id', 'album_name', 'coverurl', 'day_add', 'songs']
-
-    def get_songs(self, obj):
-        return SongSerializer(obj.song_set.all(), many=True).dat
 
 class SongSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
@@ -31,6 +25,20 @@ class SongSerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
         fields = ['id', 'title', 'song_file', 'duration']
+    
+    def get_id(self, obj):
+        return str(obj.id)
+
+class AlbumSerializer(serializers.ModelSerializer):
+    songs = serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Album
+        fields = ['id', 'album_name', 'coverurl', 'day_add', 'songs']
+
+    def get_songs(self, obj):
+        return SongSerializer(obj.song_set.all(), many=True).data  # Fixed .dat to .data
     
     def get_id(self, obj):
         return str(obj.id)
@@ -75,8 +83,11 @@ class PlaylistCreateSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     class Meta:
         model = Playlist
-        fields = ('playlist_name', 'description', 'is_public', 'cover_image')
+        fields = ('id', 'playlist_name', 'description', 'is_public', 'cover_image')
     
+    def get_id(self, obj):
+        return str(obj.id)
+        
     def create(self, validated_data):
         user = self.context['request'].user
         playlist = Playlist.objects.create(user=user, **validated_data)
@@ -110,11 +121,16 @@ class UserFavoriteCreateSerializer(serializers.ModelSerializer):
         return favorite
 
 class AccountSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    
     class Meta:
         model = Account
         fields = ['id', 'username', 'email', 
                   'role', 'date_joined']
         read_only_fields = ['id', 'date_joined']
+        
+    def get_id(self, obj):
+        return str(obj.id)
 
 class SearchResultSerializer(serializers.Serializer):
     musicians = MusicianSerializer(many=True, read_only=True)
@@ -135,7 +151,7 @@ class SearchResultSerializer(serializers.Serializer):
         
         # Tìm kiếm musicians
         musicians = Musician.objects.filter(musician_name__icontains=query)
-        musicians_data = MusicianSerializer(musicians, many=True).data
+        musicians_data = MusicianSerializer(musicians, many=True, context=self.context).data
         
         # Tìm kiếm albums
         albums = Album.objects.filter(album_name__icontains=query)
@@ -155,7 +171,7 @@ class SearchResultSerializer(serializers.Serializer):
             Q(musicians__musician_name__icontains=query) | 
             Q(songs__title__icontains=query)
         ).distinct()
-        playlists_data = PlaylistSerializer(playlists, many=True).data
+        playlists_data = PlaylistSerializer(playlists, many=True, context=self.context).data
         
         return {
             'musicians': musicians_data,
