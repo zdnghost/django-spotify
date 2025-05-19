@@ -5,9 +5,10 @@ from spotify_users.models import UserFollow
 
 class MusicianSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
+    is_followed = serializers.SerializerMethodField()
     class Meta:
         model = Musician
-        fields =  ('musician_name','introduce','social_media', 'number_of_follower', 'is_followed')
+        fields = ('id', 'musician_name', 'about', 'social_media', 'number_of_follower', 'is_followed')
     def get_is_followed(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:

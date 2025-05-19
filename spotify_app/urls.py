@@ -15,14 +15,5 @@ urlpatterns = [
     path('stream_song/<slug:song_id>/', stream_song, name='stream_song'),
     path('stream_video/<slug:song_id>/', stream_video, name='stream_video'),
     path('api/search/', SearchView.as_view(), name='search'),
-    path('api/musicians/<int:pk>/follow/', MusicianViewSet.as_view({'post': 'follow'}), name='musician-follow'),
-    path('api/musicians/<int:pk>/unfollow/', MusicianViewSet.as_view({'post': 'unfollow'}), name='musician-unfollow'),
-    path('api/musicians/following/', MusicianViewSet.as_view({'get': 'following'}), name='musician-following'),
-    path('api/user-playlists/<str:pk>/add-song/', 
-         UserPlaylistViewSet.as_view({'post': 'add_song'}), 
-         name='playlist-add-song'),
-    path('api/user-playlists/<str:pk>/remove-song/', 
-         UserPlaylistViewSet.as_view({'post': 'remove_song'}), 
-         name='playlist-remove-song'),
 ]
     
