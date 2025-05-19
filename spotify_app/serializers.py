@@ -8,6 +8,7 @@ class MusicianSerializer(serializers.ModelSerializer):
     is_followed = serializers.SerializerMethodField()
     avatar_pic = serializers.ImageField()
     cover_pic = serializers.ImageField()
+
     class Meta:
         model = Musician
         fields = ('id', 'musician_name','avatar_pic','cover_pic', 'about', 'social_media', 'number_of_follower', 'is_followed')
@@ -23,7 +24,7 @@ class MusicianSerializer(serializers.ModelSerializer):
 
 class SongSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
-    
+    albumArt = serializers.ImageField()
     class Meta:
         model = Song
         fields = ['id', 'title','albumArt', 'duration']
@@ -34,7 +35,7 @@ class SongSerializer(serializers.ModelSerializer):
 class AlbumSerializer(serializers.ModelSerializer):
     songs = serializers.SerializerMethodField()
     id = serializers.SerializerMethodField()
-
+    coverurl = serializers.ImageField()
     class Meta:
         model = Album
         fields = ['id', 'album_name', 'coverurl', 'day_add', 'songs']
@@ -47,7 +48,8 @@ class AlbumSerializer(serializers.ModelSerializer):
 
 class MusicianListSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
-    
+    avatar_pic = serializers.ImageField()
+
     class Meta:
         model = Musician
         fields = ['id', 'musician_name','avatar_pic']
