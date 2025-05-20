@@ -27,7 +27,7 @@ class SongSerializer(serializers.ModelSerializer):
     albumArt = serializers.ImageField()
     class Meta:
         model = Song
-        fields = ['id', 'title','albumArt', 'duration']
+        fields = ['id', 'title','albumArt', 'duration', 'musicians', 'views', 'album']
     
     def get_id(self, obj):
         return str(obj.id)
