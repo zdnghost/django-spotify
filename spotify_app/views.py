@@ -108,6 +108,10 @@ class SongViewSet(viewsets.ModelViewSet):
     queryset = Song.objects.all()
     serializer_class = SongSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
 class PlaylistViewSet(viewsets.ModelViewSet):
@@ -129,7 +133,7 @@ class UserPlaylistViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return Playlist.objects.none()
         
-        from django.db.models import Q
+
         return Playlist.objects.filter(
             Q(user=user) | Q(is_public=True)
         ).distinct()

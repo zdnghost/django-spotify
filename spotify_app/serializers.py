@@ -25,12 +25,33 @@ class MusicianSerializer(serializers.ModelSerializer):
 class SongSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     albumArt = serializers.ImageField()
+    musicians = serializers.SerializerMethodField()
+    album = serializers.SerializerMethodField()
+    
     class Meta:
         model = Song
-        fields = ['id', 'title','albumArt', 'duration', 'musicians', 'views', 'album']
+        fields = ['id', 'title', 'albumArt', 'duration', 'musicians', 'views', 'album']
     
     def get_id(self, obj):
         return str(obj.id)
+    
+    def get_musicians(self, obj):
+        try:
+            return MusicianListSerializer(obj.musicians.all(), many=True, context=self.context).data
+        except Exception:
+            
+            return []
+            
+    def get_album(self, obj):
+        try:
+            if obj.album:
+                return {
+                    'id': str(obj.album.id),
+                    'album_name': obj.album.album_name
+                }
+            return None
+        except Exception:
+            return None
 
 class AlbumSerializer(serializers.ModelSerializer):
     songs = serializers.SerializerMethodField()
