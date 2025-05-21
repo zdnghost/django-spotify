@@ -121,14 +121,8 @@ class PlaylistCreateSerializer(serializers.ModelSerializer):
         playlist = Playlist.objects.create(user=user, **validated_data)
         return playlist
 
-class SongToggleFavoriteSerializer(serializers.Serializer):
-    song_id = serializers.CharField(required=True)
-
-    def validate_song_id(self, value):
-        try:
-            return Song.objects.get(id=value)
-        except Song.DoesNotExist:
-            raise serializers.ValidationError("Song not found.")
+class FavoriteToggleSerializer(serializers.Serializer):
+    song_id = serializers.PrimaryKeyRelatedField(queryset=Song.objects.all())
 
 class UserFavoriteSerializer(serializers.ModelSerializer):
     song = SongSerializer(read_only=True)
@@ -139,22 +133,14 @@ class UserFavoriteSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'favorited_at')
 
 class UserFavoriteCreateSerializer(serializers.ModelSerializer):
-    song_id = serializers.CharField(write_only=True)  
-    song = serializers.PrimaryKeyRelatedField(read_only=True)  
-
     class Meta:
         model = UserFavorite
-        fields = ('song_id', 'song')
-
-    def validate_song_id(self, value):
-        try:
-            return Song.objects.get(id=value)
-        except Song.DoesNotExist:
-            raise serializers.ValidationError("Song not found.")
-
+        fields = ('song',)
+    
     def create(self, validated_data):
         user = self.context['request'].user
-        song = validated_data.get('song_id')  
+        song = validated_data.get('song')
+        
         
         favorite, created = UserFavorite.objects.get_or_create(
             user=user,

@@ -5,8 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer, SearchResultSerializer, PlaylistCreateSerializer, UserFavoriteSerializer, UserFavoriteCreateSerializer, SongToggleFavoriteSerializer
+from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer, SearchResultSerializer, PlaylistCreateSerializer, FavoriteToggleSerializer, UserFavoriteSerializer, UserFavoriteCreateSerializer
 from .models import Musician, Album, Song, Playlist, Account, UserFavorite
 import boto3
 from botocore.client import Config
@@ -207,22 +206,23 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def toggle(self, request):
-        serializer = SongToggleFavoriteSerializer(data=request.data)
+        serializer = FavoriteToggleSerializer(data=request.data)
         
         if serializer.is_valid():
-            song = serializer.validated_data['song_id']  
+            song = serializer.validated_data['song_id']  # đã là instance của Song
             user = request.user
 
-            
             try:
                 favorite = UserFavorite.objects.get(user=user, song=song)
                 favorite.delete()
                 return Response({
+                    "detail": f"Song '{song.title}' removed from favorites.",
                     "is_favorite": False
                 }, status=status.HTTP_200_OK)
             except UserFavorite.DoesNotExist:
                 UserFavorite.objects.create(user=user, song=song)
                 return Response({
+                    "detail": f"Song '{song.title}' added to favorites.",
                     "is_favorite": True
                 }, status=status.HTTP_201_CREATED)
 
