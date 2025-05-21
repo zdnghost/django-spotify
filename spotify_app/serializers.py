@@ -126,11 +126,16 @@ class FavoriteToggleSerializer(serializers.Serializer):
 
 class UserFavoriteSerializer(serializers.ModelSerializer):
     song = SongSerializer(read_only=True)
-    
+    id = serializers.SerializerMethodField()
+
     class Meta:
         model = UserFavorite
         fields = ('id', 'song', 'favorited_at')
         read_only_fields = ('id', 'favorited_at')
+    def get_id(self, obj):
+        if hasattr(obj, 'id'):
+            return str(obj.id)  # Convert ObjectId to string
+        return None
 
 class UserFavoriteCreateSerializer(serializers.ModelSerializer):
     class Meta:

@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django_mongodb_backend.fields import EmbeddedModelField, ArrayField
 from django_mongodb_backend.models import EmbeddedModel
-
+from django_mongodb_backend.fields import ObjectIdAutoField
 
 class Musician(models.Model):
     musician_name = models.CharField(max_length=255)
@@ -83,6 +83,7 @@ class Playlist(models.Model):
         return self.playlist_name
 
 class UserFavorite(models.Model):
+    id = ObjectIdAutoField(primary_key=True)  # Add this line
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
     song = models.ForeignKey(Song, on_delete=models.CASCADE, related_name='favorited_by')
     favorited_at = models.DateTimeField(auto_now_add=True)

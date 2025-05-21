@@ -187,7 +187,8 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
         return UserFavoriteSerializer
     
     def get_queryset(self):
-        return UserFavorite.objects.filter(user=self.request.user)
+        user = self.request.user
+        return UserFavorite.objects.filter(user=user)
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
