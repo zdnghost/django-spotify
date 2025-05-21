@@ -54,10 +54,10 @@ class MusicianViewSet(viewsets.ModelViewSet):
             return Response({"detail": "You are already following this musician."}, 
                            status=status.HTTP_400_BAD_REQUEST)
         
-        # tạo bảng user nối musician
+        
         UserFollow.objects.create(user=user, musician=musician)
         
-        # tăng follow musician
+        
         Musician.objects.filter(id=musician.id).update(number_of_follower=F('number_of_follower') + 1)
         
         return Response({"detail": f"You are now following {musician.musician_name}."}, 
@@ -143,40 +143,40 @@ class UserPlaylistViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
     
     @action(detail=True, methods=['post'])
-    def add_track(self, request, pk=None):
+    def add_song(self, request, pk=None):
         playlist = self.get_object()
-        track_id = request.data.get('track_id')
-        
-        if not track_id:
-            return Response({'error': 'Track ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        song_id = request.data.get('song_id')
+
+        if not song_id:
+            return Response({'error': 'Song ID is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            track = Track.objects.get(id=track_id)
-            playlist.tracks.add(track)
+            song = Song.objects.get(id=song_id)
+            playlist.songs.add(song)
             return Response({
-                'message': 'Track added to playlist successfully!',
-                'playlist': PlaylistSerializer(playlist).data
+                'message': 'Song added to playlist successfully!',
+                'playlist': PlaylistSerializer(playlist, context={'request': request}).data
             })
-        except Track.DoesNotExist:
-            return Response({'error': 'Track not found'}, status=status.HTTP_404_NOT_FOUND)
-    
+        except Song.DoesNotExist:
+            return Response({'error': 'Song not found'}, status=status.HTTP_404_NOT_FOUND)
+
     @action(detail=True, methods=['post'])
-    def remove_track(self, request, pk=None):
+    def remove_song(self, request, pk=None):
         playlist = self.get_object()
-        track_id = request.data.get('track_id')
-        
-        if not track_id:
-            return Response({'error': 'Track ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        song_id = request.data.get('song_id')
+
+        if not song_id:
+            return Response({'error': 'Song ID is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            track = Track.objects.get(id=track_id)
-            playlist.tracks.remove(track)
+            song = Song.objects.get(id=song_id)
+            playlist.songs.remove(song)
             return Response({
-                'message': 'Track removed from playlist successfully!',
-                'playlist': PlaylistSerializer(playlist).data
+                'message': 'Song removed from playlist successfully!',
+                'playlist': PlaylistSerializer(playlist, context={'request': request}).data
             })
-        except Track.DoesNotExist:
-            return Response({'error': 'Track not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Song.DoesNotExist:
+            return Response({'error': 'Song not found'}, status=status.HTTP_404_NOT_FOUND)
     
 class UserFavoriteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -196,7 +196,7 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-    # này là xóa trực tiếp trong list
+    
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         title = instance.song.title
@@ -213,9 +213,9 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
             user = request.user
             
             try:
-                # tìm các favorite đã có
+                
                 favorite = UserFavorite.objects.get(user=user, song=song)
-                # này là xóa không trong giao diện list
+                
                 favorite.delete()
                 return Response({"detail": f"Song '{song.title}' removed from favorites.",
                                 "is_favorite": False}, 
@@ -235,7 +235,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 
 def stream_song(request, song_id):
     try:
-        song_obj_id = ObjectId(song_id)  # Chuyển từ chuỗi sang ObjectId
+        song_obj_id = ObjectId(song_id)  
     except Exception:
         raise Http404("ID không hợp lệ")
 
@@ -269,7 +269,7 @@ def stream_song(request, song_id):
 
 def stream_video(request, song_id):
     try:
-        song_obj_id = ObjectId(song_id)  # Chuyển từ chuỗi sang ObjectId
+        song_obj_id = ObjectId(song_id)  
     except Exception:
         raise Http404("ID không hợp lệ")
 
@@ -283,7 +283,7 @@ def stream_video(request, song_id):
 
     # Stream file từ S3
     bucket_name = AWS_STORAGE_BUCKET_NAME
-    object_key = song.video_file.name  # ví dụ: "song_files/audio.mp3"
+    object_key = song.video_file.name  # ví dụ: "video_files/audio.mp4"
 
     s3 = boto3.client(
         's3',
