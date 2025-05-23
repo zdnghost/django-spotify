@@ -1,8 +1,7 @@
 from django.http import HttpResponse ,Http404 ,StreamingHttpResponse
-from django.shortcuts import render
 from rest_framework import viewsets, status, generics, permissions
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from .serializers import MusicianSerializer, AlbumSerializer, SongSerializer, PlaylistSerializer, AccountSerializer, SearchResultSerializer, PlaylistCreateSerializer, FavoriteToggleSerializer, UserFavoriteSerializer, UserFavoriteCreateSerializer
@@ -29,7 +28,7 @@ def index(request):
 
 class IsPlaylistOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        # chỉ người sở hữu mới có quyền
+        
         return obj.user == request.user
     
 class MusicianViewSet(viewsets.ModelViewSet):
@@ -47,7 +46,7 @@ class MusicianViewSet(viewsets.ModelViewSet):
         musician = self.get_object()
         user = request.user
         
-        # kiểm tra có follow chưa
+        
         follow_exists = UserFollow.objects.filter(user=user, musician=musician).exists()
         
         if follow_exists:
@@ -198,7 +197,7 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
     
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request):
         instance = self.get_object()
         title = instance.song.title
         self.perform_destroy(instance)
@@ -210,7 +209,7 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
         serializer = FavoriteToggleSerializer(data=request.data)
         
         if serializer.is_valid():
-            song = serializer.validated_data['song_id']  # đã là instance của Song
+            song = serializer.validated_data['song_id']  
             user = request.user
 
             try:
@@ -305,7 +304,7 @@ class SearchView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = SearchResultSerializer
     
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         query = request.query_params.get('q', '')
         
         if not query:

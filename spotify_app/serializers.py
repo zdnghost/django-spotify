@@ -84,21 +84,27 @@ class MusicianListSerializer(serializers.ModelSerializer):
 class PlaylistSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
     songs = SongSerializer(many=True, read_only=True)
     musicians = MusicianListSerializer(many=True, read_only=True)
     song_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Playlist
-        fields = ['id', 'user_id', 'playlist_name', 'description', 'created_at', 'updated_at', 
+        fields = ['id', 'user_id','username', 'playlist_name', 'description', 'created_at', 'updated_at', 
                   'is_public', 'cover_image', 'songs', 'musicians', 'song_count']
     
     def get_id(self, obj):
-        return str(obj.id)  # Convert ObjectId to string
+        return str(obj.id)  
     
     def get_user_id(self, obj):
         if obj.user:
-            return str(obj.user.id)  # Convert ObjectId to string
+            return str(obj.user.id)  
+        return None
+    
+    def get_username(self, obj):
+        if obj.user:
+            return str(obj.user.username)
         return None
     
     def get_song_count(self, obj):
@@ -125,8 +131,9 @@ class FavoriteToggleSerializer(serializers.Serializer):
     song_id = serializers.PrimaryKeyRelatedField(queryset=Song.objects.all())
 
 class UserFavoriteSerializer(serializers.ModelSerializer):
-    song = SongSerializer(read_only=True)
     id = serializers.SerializerMethodField()
+    song = SongSerializer(read_only=True)
+
 
     class Meta:
         model = UserFavorite
@@ -134,7 +141,7 @@ class UserFavoriteSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'favorited_at')
     def get_id(self, obj):
         if hasattr(obj, 'id'):
-            return str(obj.id)  # Convert ObjectId to string
+            return str(obj.id)  
         return None
 
 class UserFavoriteCreateSerializer(serializers.ModelSerializer):
